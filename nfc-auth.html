@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NFC AES Decryption (CBC)</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+<body>
+  <h2>Scan NFC to Verify Code</h2>
+  <button id="scan">Scan NFC</button>
+  <p id="output"></p>
+
+  <script>
+    const AES_KEY = "rnb+hKFoQpJScaOrKarM3nfS5pzmHl2D"; // must match encryption key
+    const expectedPlainText = "JBSWY3DPEHPK3PXP"; // your original plaintext
+
+    document.getElementById('scan').addEventListener('click', async () => {
+      try {
+        const ndef = new NDEFReader();
+        await ndef.scan();
+        console.log("NFC scan started");
+
+        ndef.onreading = (event) => {
+          const decoder = new TextDecoder();
+          for (const record of event.message.records) {
+            const encryptedBase64 = decoder.decode(record.data);
+            console.log("Encrypted NFC data:", encryptedBase64);
+
+            // Decode Base64 and extract IV and CipherText
+            const rawData = CryptoJS.enc.Base64.parse(encryptedBase64);
+            const iv = CryptoJS.lib.WordArray.create(rawData.words.slice(0, 4)); // 16 bytes (4 words)
+            const ciphertext = CryptoJS.lib.WordArray.create(rawData.words.slice(4));
+
+            const decrypted = CryptoJS.AES.decrypt(
+              { ciphertext: ciphertext },
+              CryptoJS.enc.Utf8.parse(AES_KEY),
+              {
+                iv: iv,
+                mode: CryptoJS.mode.CBC,
+                padding: CryptoJS.pad.Pkcs7
+              }
+            );
+
+            const plainText = decrypted.toString(CryptoJS.enc.Utf8);
+            console.log("Decrypted:", plainText);
+
+            document.getElementById('output').textContent =
+              plainText === expectedPlainText
+                ? "✅ Code verified successfully!"
+                : "❌ Code is invalid.";
+          }
+        };
+      } catch (error) {
+        console.error("Error:", error);
+        document.getElementById('output').textContent = "Error reading NFC.";
+      }
+    });
+  </script>
+</body>
+</html>
