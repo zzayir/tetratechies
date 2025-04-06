@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Crescent Bank</title>
+    <link rel="stylesheet" href="style-home.css">
+</head>
+<body>
+
+    <div class="home-container">
+        <h1>Welcome to Crescent Bank</h1>
+        <div class="account-details">
+            <p><strong>Account Balance:</strong> ₹50,000</p>
+            <p><strong>Transaction History:</strong></p>
+            <ul>
+                <li>₹5,000 - Grocery Shopping</li>
+                <li>₹15,000 - Online Purchase</li>
+                <li>₹2,500 - Electricity Bill</li>
+            </ul>
+            <p><strong>UPI ID:</strong> user@cresbank</p>
+            <p><strong>UPI QR Code:</strong></p>
+            <img src="./img/qrcode.jpg" alt="UPI QR Code" class="upi-code">
+        </div>
+        <button class="btn solid" onclick="logout()">Logout</button>
+    </div>
+
+    <script>
+        function logout() {
+            window.location.href = "index.html";
+        }
+    </script>
+
+</body>
+</html>
