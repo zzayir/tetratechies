@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="logo-container">
+        <img src="./img/creslogo.png" alt="Logo" class="logo">
+    </div>
+
+    <div class="transition-overlay"></div>
+
+    <script>
+        setTimeout(() => {
+            document.querySelector(".transition-overlay").classList.add("active"); // Start fade-out effect
+            setTimeout(() => {
+                window.location.href = "login.html"; // Redirect after fade-out
+            }, 1000); // Delay for fade-out animation
+        }, 2500); // Delay before transition starts
+    </script>
+</body>
+</html>
