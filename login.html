@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CRESCENT BANK - Secure Login</title>
+    <link rel="stylesheet" type="text/css" href="./style-login.css" />
+    <script src="https://kit.fontawesome.com/64d58efce2.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+
+    <style>
+      /* NFC Auth Overlay Styles */
+      .nfc-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        color: white;
+      }
+      
+      .nfc-card {
+        position: relative;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        animation: fadeInUp 0.5s;
+      }
+      
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      .nfc-icon {
+        font-size: 60px;
+        margin-bottom: 20px;
+        color: #00c6ff;
+      }
+      
+      .nfc-title {
+        font-size: 24px;
+        margin-bottom: 15px;
+      }
+      
+      .nfc-subtitle {
+        font-size: 16px;
+        opacity: 0.8;
+        margin-bottom: 30px;
+      }
+      
+      .nfc-btn {
+        background: linear-gradient(135deg, #00c6ff, #0072ff);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 30px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(0, 114, 255, 0.3);
+      }
+      
+      .nfc-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 114, 255, 0.4);
+      }
+      
+      .nfc-status {
+        margin-top: 20px;
+        min-height: 24px;
+        font-size: 14px;
+      }
+      
+      .nfc-logo {
+        width: 100px;
+        margin-bottom: 5px;
+      }
+      
+      .back-button {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background-color: transparent;
+        border: 1px solid #ccc;
+        color: #fff;
+        padding: 8px 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s;
+        font-size: 14px;
+      }
+      
+      .back-button:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="forms-container">
+        <div class="signin-signup">
+          <!-- Sign In Form -->
+          <form class="sign-in-form" id="loginForm">
+            <div class="logo-container">
+              <img src="./img/creslogo.png" alt="Bank Logo" class="bank-logo">
+            </div>
+            <h1 class="bank-title">CRESCENT BANK OF INDIA</h1>
+            <h2 class="title">User Login</h2>
+            <div class="input-field">
+              <i class="fas fa-user"></i>
+              <input type="text" id="username" placeholder="Username/Email" required />
+            </div>
+            <div class="input-field">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="password" placeholder="Password" required />
+            </div>
+            <input type="submit" value="Login" class="btn solid" />
+          </form>
+
+          <!-- Sign Up Form -->
+          <form class="sign-up-form" id="managerLoginForm">
+            <div class="logo-container">
+              <img src="./img/creslogo.png" alt="Bank Logo" class="bank-logo">
+            </div>
+            <h1 class="bank-title">CRESCENT BANK OF INDIA</h1>
+            <h2 class="title">Manager Login</h2>
+            <div class="input-field">
+              <i class="fas fa-user"></i>
+              <input type="text" id="managerIdentifier" placeholder="Username or Email" required />
+            </div>
+            <div class="input-field">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="managerPassword" placeholder="Password" required />
+            </div>
+            <input type="submit" value="Login" class="btn solid" />
+          </form>
+        </div>
+      </div>
+
+      <!-- Panels -->
+      <div class="panels-container">
+        <div class="panel left-panel">
+          <div class="content">
+            <h3>Manager Access?</h3>
+            <p>Login with manager credentials</p>
+            <button class="btn transparent" id="sign-up-btn">Manager Login</button>
+          </div>
+          <img src="./img/log.svg" class="image" alt="Sign up illustration" />
+        </div>
+
+        <div class="panel right-panel">
+          <div class="content">
+            <h3>Customer Access?</h3>
+            <p>Login with user credentials</p>
+            <button class="btn transparent" id="sign-in-btn">User Login</button>
+          </div>
+          <img src="./img/register.svg" class="image" alt="Sign in illustration" />
+        </div>
+      </div>
+    </div>
+
+    <!-- NFC Authentication Overlay -->
+    <div class="nfc-overlay" id="nfcAuthOverlay">
+      <div class="nfc-card">
+        <button class="back-button" id="backButton">← Back</button>
+        <img src="./img/creslogo1.png" alt="Bank Logo" class="nfc-logo">
+        <div class="nfc-icon">
+          <i class="fas fa-id-card"></i>
+        </div>
+        <h2 class="nfc-title">Ring Authentication Required</h2>
+        <p class="nfc-subtitle">Tap your security ring to verify your identity</p>
+        <button class="nfc-btn" id="nfcScanBtn">Tap to Authenticate</button>
+        <p class="nfc-status" id="nfcStatus"></p>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+    <div class="footer-text">Created by Tetra Techies</div>
+
+    <script>
+      const AES_KEY = "rnb+hKFoQpJScaOrKarM3nfS5pzmHl2D";
+      const EXPECTED_TEXT = "JBSWY3DPEHPK3PXP";
+      const ALLOWED_SERIAL_NUMBER = "04:57:54:52:A6:1C:90"; // Only this serial number will work
+    
+      document.getElementById("loginForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        if ((username === "zzayir" || username === "zzayir21@gmail.com") && password === "zzayir21") {
+          showNFCAuth();
+        } else {
+          alert("Invalid credentials!");
+        }
+      });
+     
+      // Manager Login Form Handler
+     document.getElementById("managerLoginForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const identifier = document.getElementById("managerIdentifier").value.toLowerCase();
+        const password = document.getElementById("managerPassword").value;
+        
+        if ((identifier === "tetratechies" || identifier === "tetratechies04@gmail.com") && password === "rlkm747677108") {
+          // Directly redirect to home page for manager (no NFC required)
+          window.location.href = "home.html";
+        } else {
+          alert("Invalid credentials! Please try again.");
+        }
+      });
+    
+      function showNFCAuth() {
+        const overlay = document.getElementById("nfcAuthOverlay");
+        overlay.style.display = "flex";
+        setTimeout(() => {
+          scanNFC();
+        }, 500);
+      }
+    
+      async function scanNFC() {
+        const statusEl = document.getElementById("nfcStatus");
+        const scanBtn = document.getElementById("nfcScanBtn");
+    
+        statusEl.textContent = "Preparing scanner...";
+        scanBtn.disabled = true;
+    
+        if ("NDEFReader" in window) {
+          try {
+            const reader = new NDEFReader();
+            await reader.scan();
+            statusEl.textContent = "Ready - Tap your Ring now";
+    
+            reader.onreading = (event) => {
+              statusEl.textContent = "Reading Ring...";
+    
+              // Play sound
+              const beep = document.getElementById("beep");
+              beep?.play().catch((e) => {
+                console.warn("Sound failed:", e);
+              });
+    
+              // Get and format serial number
+              const serialNumber = event.serialNumber ? formatSerialNumber(event.serialNumber) : null;
+              
+              const decoder = new TextDecoder();
+              let encryptedData = null;
+    
+              for (const record of event.message.records) {
+                try {
+                  encryptedData = decoder.decode(record.data).trim();
+                  break; // Use first valid record
+                } catch (err) {
+                  console.error("Error reading record:", err);
+                }
+              }
+    
+              if (encryptedData) {
+                processNFCCard(encryptedData, serialNumber);
+              } else {
+                statusEl.textContent = "Error: No valid data on NFC ring";
+                scanBtn.disabled = false;
+              }
+            };
+    
+            reader.onreadingerror = () => {
+              statusEl.textContent = "Error: Couldn't read NFC ring";
+              scanBtn.disabled = false;
+            };
+          } catch (err) {
+            statusEl.textContent = "NFC error: " + err.message;
+            scanBtn.disabled = false;
+          }
+        } else {
+          statusEl.textContent = "NFC not supported on this device.";
+        }
+      }
+    
+      function formatSerialNumber(bytes) {
+        return Array.from(bytes)
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join(':')
+          .toUpperCase();
+      }
+    
+      function normalizeSerialNumber(serial) {
+        return serial ? serial.replace(/:/g, '').toUpperCase() : '';
+      }
+    
+      function processNFCCard(encryptedBase64, serialNumber) {
+        const statusEl = document.getElementById("nfcStatus");
+        const scanBtn = document.getElementById("nfcScanBtn");
+    
+        // Strict serial number verification
+        const normalizedSerial = normalizeSerialNumber(serialNumber);
+        const normalizedAllowed = normalizeSerialNumber(ALLOWED_SERIAL_NUMBER);
+    
+        if (normalizedSerial !== normalizedAllowed) {
+          statusEl.textContent = `❌ Access Denied: Invalid Ring`;
+          scanBtn.disabled = false;
+          return;
+        }
+    
+        // Only proceed with decryption if serial number matches
+        try {
+          const raw = CryptoJS.enc.Base64.parse(encryptedBase64);
+          const iv = CryptoJS.lib.WordArray.create(raw.words.slice(0, 4), 16);
+          const ciphertext = CryptoJS.lib.WordArray.create(raw.words.slice(4), raw.sigBytes - 16);
+          const decrypted = CryptoJS.AES.decrypt(
+            { ciphertext: ciphertext },
+            CryptoJS.enc.Utf8.parse(AES_KEY),
+            { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 }
+          );
+    
+          const plainText = decrypted.toString(CryptoJS.enc.Utf8).trim();
+    
+          if (plainText === EXPECTED_TEXT) {
+            statusEl.innerHTML = "✅ Authentication successful!<br>Redirecting...";
+            setTimeout(() => {
+              window.location.href = "home.html";
+            }, 1000);
+          } 
+        } catch (err) {
+          statusEl.textContent = "❌ Security verification failed";
+          scanBtn.disabled = false;
+        }
+      }
+    
+      // Back button functionality
+      document.getElementById("backButton").addEventListener("click", function() {
+        document.getElementById("nfcAuthOverlay").style.display = "none";
+      });
+    
+      // NFC scan button
+      document.getElementById("nfcScanBtn").addEventListener("click", scanNFC);
+    </script>
+  </body>
+</html>
