@@ -144,10 +144,10 @@
               <img src="./img/creslogo.png" alt="Bank Logo" class="bank-logo">
             </div>
             <h1 class="bank-title">CRESCENT BANK OF INDIA</h1>
-            <h2 class="title">Manager Login</h2>
+            <h2 class="title">Employee Login</h2>
             <div class="input-field">
               <i class="fas fa-user"></i>
-              <input type="text" id="managerIdentifier" placeholder="Username or Email" required />
+              <input type="text" id="managerIdentifier" placeholder="Username/Email" required />
             </div>
             <div class="input-field">
               <i class="fas fa-lock"></i>
@@ -162,9 +162,9 @@
       <div class="panels-container">
         <div class="panel left-panel">
           <div class="content">
-            <h3>Manager Access?</h3>
-            <p>Login with manager credentials</p>
-            <button class="btn transparent" id="sign-up-btn">Manager Login</button>
+            <h3>Employee Access?</h3>
+            <p>Login with Employee credentials</p>
+            <button class="btn transparent" id="sign-up-btn">Employee Login</button>
           </div>
           <img src="./img/log.svg" class="image" alt="Sign up illustration" />
         </div>
@@ -201,7 +201,7 @@
     <script>
       const AES_KEY = "rnb+hKFoQpJScaOrKarM3nfS5pzmHl2D";
       const EXPECTED_TEXT = "JBSWY3DPEHPK3PXP";
-      const ALLOWED_SERIAL_NUMBER = "04:57:54:52:A6:1C:90"; // Only this serial number will work
+      const ALLOWED_SERIAL_NUMBER = "00:04:0::05:07:0::05:04:0::05:02:0::0A:06:0::01:0C:0::09:00"; // Only this serial number will work
     
       document.getElementById("loginForm").addEventListener("submit", function (e) {
         e.preventDefault();
